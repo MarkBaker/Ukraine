@@ -1,9 +1,9 @@
 Support Ukraine
 ==========
 
----
-
 A PHP Composer Plug-in to show support for Ukraine
+
+---
 
 ## Installation
 
