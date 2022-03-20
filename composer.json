@@ -1,0 +1,32 @@
+{
+    "name": "markbaker/ukraine",
+    "type": "composer-plugin",
+    "description": "Composer Plug-in to show support for Ukraine",
+    "keywords": ["composer", "plugin", "ukraine"],
+    "homepage": "https://github.com/MarkBaker/Ukraine",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mark Baker",
+            "email": "mark@demon-angel.eu"
+        }
+    ],
+    "require": {
+        "composer-plugin-api": "^1.0"
+    },
+    "require-dev": {
+        "composer/composer": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "MarkBaker\\Ukraine\\": "src/"
+        }
+    },
+    "minimum-stability": "dev",
+    "extra":{
+        "class":"MarkBaker\\Ukraine\\Support"
+    },
+    "scripts": {
+        "test": "MarkBaker\\Ukraine\\Support::run"
+    }
+}
