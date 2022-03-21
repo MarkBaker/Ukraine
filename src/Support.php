@@ -11,12 +11,13 @@ use Composer\EventDispatcher\Event;
 
 class Support implements PluginInterface, EventSubscriberInterface
 {
+    const PLUGIN_NAME = 'markbaker/ukraine';
+
     private static $messageShown = false;
 
     public function activate(Composer $composer, IOInterface $io)
     {
-        $appName = $composer->getPackage()->getName();
-        self::showSupport($io, $appName);
+        self::showSupport($io);
     }
 
     public function deactivate(Composer $composer, IOInterface $io)
@@ -29,23 +30,34 @@ class Support implements PluginInterface, EventSubscriberInterface
 
     public static function getSubscribedEvents()
     {
-        return [];
+        return [
+            'post-package-install' => 'postPackageInstall',
+            'post-package-update' => 'postPackageUpdate',
+        ];
     }
 
     public static function postPackageInstall(PackageEvent $event)
     {
         $io = $event->getIO();
         $appName = $event->getOperation()->getPackage()->getName();
+        $dependencies = $event->getOperation()->getPackage()->getRequires();
+        $devDependencies = $event->getOperation()->getPackage()->getDevRequires();
 
-        self::showSupport($io, $appName);
+        self::showSupport($io);
+        self::packageSupport($io, $appName, $dependencies);
+        self::packageSupport($io, $appName, $devDependencies);
     }
 
     public static function postPackageUpdate(PackageEvent $event)
     {
         $io = $event->getIO();
         $appName = $event->getOperation()->getPackage()->getName();
+        $dependencies = $event->getOperation()->getPackage()->getRequires();
+        $devDependencies = $event->getOperation()->getPackage()->getDevRequires();
 
-        self::showSupport($io, $appName);
+        self::showSupport($io);
+        self::packageSupport($io, $appName, $dependencies);
+        self::packageSupport($io, $appName, $devDependencies);
     }
 
     public static function run(Event $event)
@@ -53,11 +65,26 @@ class Support implements PluginInterface, EventSubscriberInterface
         $io = $event->getIO();
         $composer = $event->getComposer();
         $appName = $composer->getPackage()->getName();
+        $dependencies = $composer->getPackage()->getRequires();
+        $devDependencies = $composer->getPackage()->getDevRequires();
 
-        self::showSupport($io, $appName);
+        self::showSupport($io);
+        self::packageSupport($io, $appName, $dependencies);
+        self::packageSupport($io, $appName, $devDependencies);
     }
 
-    public static function showSupport(IOInterface $io, string $appName)
+    private static function processPackage(IOInterface $io, Composer $composer, string $appName)
+    {
+        self::showSupport($io);
+
+        $dependencies = $composer->getPackage()->getRequires();
+        self::packageSupport($io, $appName, $dependencies);
+
+        $devDependencies = $composer->getPackage()->getDevRequires();
+        self::packageSupport($io, $appName, $devDependencies);
+    }
+
+    private static function showSupport(IOInterface $io)
     {
         if (self::$messageShown === false) {
             $io->write("\n<bg=blue;fg=yellow;options=bold>\n" .
@@ -68,10 +95,19 @@ class Support implements PluginInterface, EventSubscriberInterface
 
             self::$messageShown = true;
         }
+    }
 
-        $io->write(
-            "\n<bg=blue;fg=yellow;options=bold> {$appName} </>".
-                "<bg=yellow;fg=blue;options=bold> stands with Ukraine </>\n"
-        );
+
+    private static function packageSupport(IOInterface $io, string $appName, $dependencies)
+    {
+        foreach ($dependencies as $dependency) {
+            $dependencyName = $dependency->getTarget();
+            if ($dependencyName === self::PLUGIN_NAME) {
+                $io->write(
+                    "\n<bg=blue;fg=yellow;options=bold> {$appName} </>" .
+                    "<bg=yellow;fg=blue;options=bold> stands with Ukraine </>\n"
+                );
+            }
+        }
     }
 }
